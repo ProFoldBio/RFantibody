@@ -88,7 +88,7 @@ docker run --name rfantibody --gpus all -v .:/home --memory 10g -it rfantibody
 ```
 This will put you into the RFantibody container at the /home directory which mirrors the directory that you ran the last command from.
 
-
+You can stop the container with `docker stop rfantibody`, resume the container with `docker start -ai rfantibody`, and check your running containers with `docker ps -a`.
 
 ## Setup the Python Environment
 From the RFantibody container run the following to setup the python environment:
@@ -138,36 +138,31 @@ ScFv Framework: RFantibody/scripts/examples/example_inputs/hu-4D5-8_Fv.pdb
 
 ## RFdiffusion
 
-The first step in RFantibody is to generate antibody-target docks using an antibody-finetuned version of RFdiffusion. Here is an example command that will run RFdiffusion:
+The first step in RFantibody is to generate antibody-target docks using an antibody-finetuned version of RFdiffusion.  
+First put your target protein pdb file in the `design_campaign/target_protein` directory.  
+Then generate unique backbones using the `scripts/rfdiffusion_inference.py` script; here is an example command:
 ```
 # From inside of the rfantibody container
 
-poetry run python  /home/src/rfantibody/scripts/rfdiffusion_inference.py \
+poetry run python  /home/scripts/rfdiffusion_inference.py \
     --config-name antibody \
-    antibody.target_pdb=/home/scripts/examples/example_inputs/rsv_site3.pdb \
-    antibody.framework_pdb=/home/scripts/examples/example_inputs/hu-4D5-8_Fv.pdb \
+    antibody.target_pdb=/home/design_campaign/target_protein/rsv_site3.pdb \
+    antibody.framework_pdb=/home/scfv_frameworks/hu-4D5-8_Fv.pdb \
     inference.ckpt_override_path=/home/weights/RFdiffusion_Ab.pt \
     'ppi.hotspot_res=[T305,T456]' \
     'antibody.design_loops=[L1:8-13,L2:7,L3:9-11,H1:7,H2:6,H3:5-13]' \
-    inference.num_designs=20 \
-    inference.output_prefix=/home/scripts/examples/example_outputs/ab_des
+    inference.num_designs=10 \
+    inference.output_prefix=/home/design_campaign/rfdiffusion_outputs/backbone
 ```
 
 Let's go through this command in more detail to understand what these configs are doing:
 - antibody.target_pdb: A path to the target structure that we wish to design antibodies against. This is commonly a cropped target structure to reduce the computational expense of running the pipeline. Cropping strategies are explained in more depth [here](#truncating-your-target-protein).
-- antibody.framework_pdb: A path to the HLT-formatted antibody framework that we wish to use for our design. RFdiffusion will only design the structure and sequence of regions of the framework which are annotated as loops, this allows us to design the dock and loops of already optimized frameworks.
+- antibody.framework_pdb: A path to the HLT-formatted antibody framework that we wish to use for our design. RFdiffusion will only design the structure and sequence of regions of the framework which are annotated as loops, this allows us to design the dock and loops of already optimized frameworks. The example is redesigning a ScFv framework, but you can instead redesign a nanobody framework, e.g. with `antibody.framework_pdb=/home/nanobody_frameworks/h-NbBCII10.pdb`.
 - inference.ckpt_override_path: The path to the set of RFdiffusion model weights we will use for inference
 - ppi.hotspot_res: A list of hotspot residues that define our epitope. These are provided in the same format as in vanilla RFdiffusion. We discuss selecting hotspots in more detail [here](#selecting-a-target-site).
 - antibody.design_loops: A dictionary that maps each CDR loop to a range of allowed loop lengths. The length of each loop is sampled uniformly from this range and is sampled independently of the lengths sampled for other loops. If a CDR loop exists in the framework but is not in the dict, this CDR loop will have its sequence and structure fixed during design. If a CDR loop is included in the dict but no range of lengths is provided, this CDR loop will have its sequence and structure designed but only with the length of the loop that is provided in the framework structure.
 - inference.num_designs: The number of designs we should generate.
 - inference.output_prefix: The prefix of the .pdb file outputs that we will generate.
-
-We provide an example command with example inputs which can be run as follows:
-```
-# From inside of the rfantibody container
-
-bash /home/scripts/examples/rfdiffusion/antibody_pdbdesign.sh
-```
 
 ## ProteinMPNN
 
@@ -178,20 +173,15 @@ At its simplest, ProteinMPNN may be run on a directory of HLT-formatted .pdb fil
 # From inside of the rfantibody container
 
 poetry run python /home/scripts/proteinmpnn_interface_design.py \
-    -pdbdir /path/to/inputdir \
-    -outpdbdir /path/to/outputdir
+    -pdbdir /home/design_campaign/rfdiffusion_outputs \
+    -outpdbdir /home/design_campaign/proteinmpnn_outputs \
+    -temperature 0.1 \
+    -seqs_per_struct 5
 ```
 
 This will design all CDR loops and will provide one sequence per input structure. There are many more arguments that may be experimented with and are explained by running:
 ```
 poetry run python /home/scripts/proteinmpnn_interface_design.py --help
-```
-
-We provide an example command with example inputs which can be run as follows:
-```
-# From inside of the rfantibody container
-
-bash /home/scripts/examples/proteinmpnn/ab_pdb_example.sh
 ```
 
 ## RF2
@@ -203,18 +193,11 @@ At it's simplest, RF2 may be run on a directory of HLT-formatted .pdb files usin
 # From inside of the rfantibody container
 
 poetry run python /home/scripts/rf2_predict.py \
-    input.pdb_dir=/path/to/inputdir \
-    output.pdb_dir=/path/to/outputdir
+    input.pdb_dir=/home/design_campaign/proteinmpnn_outputs \
+    output.pdb_dir=/home/design_campaign/rf2_outputs
 ```
 
 By default this will run with 10 recycling iterations and with 10% of hotspots provided to the model. We don't yet know what combination of these hyperparameters will be most predictive of design success but it should be possible to tune these values once we have data on more antibody and nanobody campaigns.
-
-We provide an example with example inputs which can be run as follows:
-```
-# From inside of the rfantibody container
-
-bash /home/scripts/examples/rf2/ab_pdb_example.sh
-```
 
 # Practical Considerations for Antibody Design
 Designing antibodies is similar to designing _de novo_ binders but is in an earlier stage of development. Here we share advice and learnings on how best to use this pipeline to design antibodies which will work experimentally. We expect some of this advice to change as more antibody design campaigns are performed and best-practices crystallize. Several of these sections are adapted from the analogous section of the RFdiffusion README as these two methods share many similarities and the advice applies to both.

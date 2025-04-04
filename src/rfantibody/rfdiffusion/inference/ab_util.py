@@ -1,9 +1,5 @@
 import torch
-
 from rfantibody.rfdiffusion.kinematics import xyz_to_t2d
-
-import torch
-
 from icecream import ic
 
 from rfantibody.rfdiffusion.parsers import *

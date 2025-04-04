@@ -128,7 +128,7 @@ class ProteinMPNN_runner():
 
         # Iterate though each seq score pair and thread the sequence onto the pose
         # Then write each pose to a pdb file
-        prefix = f"{sample_feats.tag}_dldesign"
+        prefix = f"{sample_feats.tag}_seq"
         for idx, (seq, _) in enumerate(seqs_scores): 
             sample_feats.thread_mpnn_seq(seq)
 

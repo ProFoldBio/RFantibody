@@ -10,6 +10,7 @@ from omegaconf import OmegaConf
 import rfantibody.rf2.modules.rmsd as rmsd
 from rfantibody.rf2.network.predict import pae_unbin, Predictor
 import rfantibody.rf2.modules.pose_util as pu
+import os
 
 class AbPredictor(Predictor):
     """
@@ -183,8 +184,13 @@ def write_output(to_write: OrderedDict, tag: str, conf: HydraConfig) -> None:
     """
     Writes output to file. Either pdb or quiver file
     """
+
     if sum([var is not None for var in [conf.output.pdb_dir, conf.output.quiver]]) != 1:
         raise ValueError('Exactly one of output.pdb_dir or output.quiver must be specified')
+    
+    if conf.output.pdb_dir is not None:
+        os.makedirs(conf.output.pdb_dir, exist_ok=True)
+    
     qv=conf.output.quiver is not None
     for key, val in to_write.items():
         if key == 'best':
