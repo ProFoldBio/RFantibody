@@ -3,6 +3,7 @@ import os
 from dataclasses import dataclass, field
 from collections import OrderedDict
 import glob
+import re
 
 import torch
 import torch.nn.functional as F
@@ -377,7 +378,30 @@ def pose_generator(conf: HydraConfig) -> tuple[Pose, str]:
         yield pose_from_remarked(conf.input.pdb), os.path.splitext(os.path.basename(conf.input.pdb))[0]
     
     elif conf.input.pdb_dir is not None:
-        for file in glob.glob(os.path.join(conf.input.pdb_dir, '*.pdb')):
+        # 1) Collect files
+        files = glob.glob(os.path.join(conf.input.pdb_dir, '*.pdb'))
+
+        # 2) Create a sorting function that extracts backbone & seq numbers
+        def extract_nums(filepath):
+            # Get just the basename (e.g. backbone_0_seq_3)
+            base = os.path.splitext(os.path.basename(filepath))[0]
+            # Match backbone_#_seq_#
+            match = re.match(r"backbone_(\d+)_seq_(\d+)", base)
+            if match:
+                return (int(match.group(1)), int(match.group(2)))
+            else:
+                # If it doesn't match, push to the end
+                return (float('inf'), float('inf'))
+
+        # 3) Sort by backbone and seq
+        files = sorted(files, key=extract_nums)
+
+        # 4) Yield in sorted order
+        for file in files:
             if not util.check_if_remarked(file):
-                raise NotImplementedError(f"Only HLT remarked pdb files are currently supported. {file} is not remarked")
-            yield pose_from_remarked(file), os.path.splitext(os.path.basename(file))[0]
+                raise NotImplementedError(
+                    f"Only HLT remarked pdb files are currently supported. {file} is not remarked"
+                )
+            pose = pose_from_remarked(file)
+            tag = os.path.splitext(os.path.basename(file))[0]
+            yield pose, tag

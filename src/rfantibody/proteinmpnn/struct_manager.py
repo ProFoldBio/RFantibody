@@ -67,14 +67,27 @@ class StructManager():
         Iterate over the silent file or pdb directory and run the model on each structure
         '''
 
+        # Sort the file list so that backbone_0, backbone_1, etc. come first
+        import re
+        def extract_backbone_num(filename):
+            base = os.path.splitext(os.path.basename(filename))[0]
+            match = re.match(r"backbone_(\d+)$", base)
+            if match:
+                return int(match.group(1))
+            else:
+                return float('inf')
+
+        self.struct_iterator = sorted(self.struct_iterator, key=extract_backbone_num)
+
         # Iterate over the structs and for each, check that the struct has not already been processed
         for struct in self.struct_iterator:
             tag = os.path.basename(struct).split('.')[0]
-            if tag in self.finished_structs:
-                print(f'{tag} has already been processed. Skipping')
+            if struct in self.finished_structs:
+                print(f'{struct} has already been processed. Skipping')
                 continue
 
             yield struct
+
 
     def dump_pose(
         self,
