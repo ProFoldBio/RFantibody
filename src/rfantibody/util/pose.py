@@ -3,7 +3,7 @@ import numpy as np
 from dataclasses import dataclass
 from typing import List
 
-from rfantibody.rfdiffusion.chemical import num2aa, aa2num
+from rfantibody.util.chemical import num2aa, aa2num
 from rfantibody.util.io import ab_write_pdblines
 from rfantibody.rf2.modules.parsers import parse_pdblines, get_cdr_masks_from_remarks
 

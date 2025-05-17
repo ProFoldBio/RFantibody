@@ -118,7 +118,7 @@ def main(conf: HydraConfig) -> None:
             make_deterministic(i_des)
 
         start_time = time.time()
-        out_prefix = f'{sampler.inf_conf.output_prefix}_backbone_{i_des}'
+        out_prefix = f'{sampler.inf_conf.output_prefix}backbone_{i_des}'
         log.info(f'Making design {out_prefix}')
         if sampler.inf_conf.cautious and os.path.exists(out_prefix+'.pdb'):
             log.info(f'(cautious mode) Skipping this design because {out_prefix}.pdb already exists.')
