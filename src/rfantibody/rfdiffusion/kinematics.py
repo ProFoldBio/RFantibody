@@ -2,7 +2,7 @@ import torch
 
 import numpy as np
 
-from rfantibody.rfdiffusion.chemical import INIT_CRDS
+from rfantibody.util.chemical import INIT_CRDS
 
 PARAMS = {
     "DMIN"    : 2.0,

@@ -4,7 +4,7 @@ import numpy as np
 import scipy.sparse
 import itertools
 
-from rfantibody.rfdiffusion.chemical import *
+from rfantibody.util.chemical import *
 from rfantibody.rfdiffusion.scoring import *
 
 class Dotdict(dict):

@@ -14,7 +14,7 @@ from rfantibody.rfdiffusion.inference import ab_pose
 from rfantibody.rfdiffusion.RoseTTAFoldModel import RoseTTAFoldModule
 from rfantibody.rfdiffusion.kinematics import get_init_xyz, xyz_to_t2d
 from rfantibody.rfdiffusion.diffusion import Diffuser
-from rfantibody.rfdiffusion.chemical import seq2chars, INIT_CRDS
+from rfantibody.util.chemical import seq2chars, INIT_CRDS
 from rfantibody.rfdiffusion.util_module import ComputeAllAtomCoords
 from rfantibody.rfdiffusion.contigs import ContigMap
 from rfantibody.rfdiffusion.inference import utils as iu

@@ -4,7 +4,7 @@ import numpy as np
 
 from typing import List, Optional
 
-from rfantibody.rfdiffusion.chemical import aa2long, aa2num
+from rfantibody.util.chemical import aa2long, aa2num
 
 def stamp_pdbline(
     prefix: str,

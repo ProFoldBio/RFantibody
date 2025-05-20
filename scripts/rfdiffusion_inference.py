@@ -31,7 +31,7 @@ import logging
 
 from rfantibody.rfdiffusion.util import writepdb_multi, writepdb, generate_Cbeta
 from rfantibody.util.io import ab_write_pdblines
-from rfantibody.rfdiffusion.chemical import num2aa
+from rfantibody.util.chemical import num2aa
 from rfantibody.util.quiver import Quiver
 from rfantibody.rfdiffusion.inference import model_runners
 

@@ -11,7 +11,7 @@ import gzip
 
 import pandas as pd
 
-from rfantibody.rfdiffusion.chemical import aa2num, aa2long
+from rfantibody.util.chemical import aa2num, aa2long
 
 
 to1letter = {

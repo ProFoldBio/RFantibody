@@ -5,7 +5,7 @@ import torch
 from icecream import ic
 from rfantibody.rfdiffusion.parsers import chothia_pdb_parser, HLT_pdb_parser
 
-from rfantibody.rfdiffusion.chemical import INIT_CRDS
+from rfantibody.util.chemical import INIT_CRDS
 import random
 from rfantibody.rfdiffusion.util import Dotdict
 from rfantibody.rfdiffusion.inference.utils import parse_pdb

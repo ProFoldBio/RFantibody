@@ -15,7 +15,7 @@ inference:
   output_prefix: samples/design
   write_trajectory: True
   scaffold_guided: False
-  model_runner: NRBStyleSelfCond
+  model_runner: AbSampler # previously NRBStyleSelfCond
   cautious: True
   recycle_between: False
   align_motif: True
