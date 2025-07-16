@@ -98,6 +98,8 @@ This does the following:
 - Use [Python Poetry](https://python-poetry.org) to build the Python environment
 - Build the [USalign](https://github.com/pylelab/USalign) executable
 
+Also copy the USalign executable to your path: `cp /home/include/USalign/USalign /usr/local/bin/USalign`
+
 # Usage
 
 ## HLT File Format
